@@ -10,10 +10,11 @@ import de.pandadoxo.melonsigns.core.Server;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PluginMessageEvent;
+import net.md_5.bungee.api.event.ServerConnectedEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
@@ -56,6 +57,21 @@ public class MessageListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onConnected(ServerConnectedEvent event) {
+        if (connectQueue.containsKey(event.getPlayer())) {
+            if (connectQueue.get(event.getPlayer()).equals(event.getServer().getInfo())) {
+                connectQueue.remove(event.getPlayer());
+            }
+        }
+    }
+
+    @EventHandler
+    public void onDisconnect(PlayerDisconnectEvent event) {
+        connectQueue.remove(event.getPlayer());
+    }
+
+
     public boolean isNumber(String tocheck) {
         try {
             Integer.parseInt(tocheck);
@@ -73,8 +89,6 @@ public class MessageListener implements Listener {
 
         if (!Main.getDoxperm().has(player, "bungeecord.join." + joinPerm, false)) {
             player.sendMessage(noPerm);
-            System.out.println(TextComponent.toPlainText(noPerm));
-            System.out.println(player.getName());
             return;
         }
 
